@@ -1,22 +1,16 @@
-# https://hub.docker.com/_/python
-FROM python:3.11.0-alpine3.17
+FROM python:3.10.0
 
-# Optional python modules for additional functionality
-# https://urlwatch.readthedocs.io/en/latest/dependencies.html#optional-packages
-ENV OPT_PYPKGS="beautifulsoup4 jsbeautifier cssbeautifier aioxmpp"
-ENV HOME="/home/user"
+RUN python3 -m pip install --no-cache-dir pyyaml minidb requests keyring appdirs lxml cssselect beautifulsoup4 jsbeautifier cssbeautifier aioxmpp
 
-RUN adduser -D user
-USER user
-WORKDIR $HOME
+WORKDIR /opt/urlwatch
 
-COPY --chown=user . $HOME/urlwatch
+COPY lib ./lib
+COPY share ./share
+COPY setup.py .
+COPY setup.cfg .
 
-RUN pip install \
-  --no-cache-dir \
-  ./urlwatch \
-  $OPT_PYPKGS \
-  && rm -rf urlwatch
+RUN python setup.py install
 
-ENV PATH="$HOME/.local/bin:$PATH"
-ENTRYPOINT ["/home/user/.local/bin/urlwatch"]
+WORKDIR /root/.urlwatch
+
+ENTRYPOINT ["urlwatch"]
